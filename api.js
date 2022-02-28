@@ -4,6 +4,7 @@ var router = express.Router();
 var TaskModel = require('./task_schema');
 var query = "mongodb+srv://NicoPerez:12345678910@cluster0.w0nk5.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 const db = (query);
+let environment = null;
 
 mongoose.Promise = global.Promise;
 
@@ -72,5 +73,28 @@ router.delete('/delete-task', function (req, res) {
         }
     });
 });
+router.delete('/delete-task', function (req, res) {
+    TaskModel.deleteOne({ TaskId: req.body.TaskId }, function (err, data) {
+        if (err) {
+            res.status(500).send("Internal error\n");
+        } else {
+            res.status(200).send("OK\n");
+        }
+    });
+});
+if (!process.env.ON_HEROKU) {
+    console.log("Cargando variables de entorno desde archivo");
+    const env = require('node-env-file');
+    env(__dirname + '/.env');
+}
+
+environment = {
+    DBMONGOUSER: process.env.DBMONGOUSER,
+    DBMONGOPASS: process.env.DBMONGOPASS,
+    DBMONGOSERV: process.env.DBMONGOSERV,
+    DBMONGO: process.env.DBMONGO,
+};
+
+var query = 'mongodb+srv://' + environment.DBMONGOUSER + ':' + environment.DBMONGOPASS + '@' + environment.DBMONGOSERV + '/' + environment.DBMONGO + '?retryWrites=true&w=majority';
 
 module.exports = router;
